@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AUTOMALL Dashboard</title>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        :root {
+            --panel-bg: rgba(26, 28, 35, 0.92); /* Полупрозрачный фон для читаемости */
+            --input-bg: #2d303e;
+            --accent: #00f2ff;
+            --accent-red: #ff3131; /* Красный как в логотипе */
+            --accent-green: #39ff14;
+            --text-main: #e0e0e0;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            /* Задний фон с автомобилем */
+            background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), 
+                        url('https://unsplash.com') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main);
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        .dashboard {
+            background: var(--panel-bg);
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px); /* Эффект размытия стекла */
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        /* Название в стиле логотипа: AUTO (красный) MALL (белый) */
+        .header h1 {
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin: 0;
+            font-size: 48px;
+            font-weight: 700;
+        }
+        .header h1 span.auto { color: var(--accent-red); }
+        .header h1 span.mall { color: #ffffff; }
+
+        .header p {
+            color: var(--text-dim);
+            font-size: 14px;
+            letter-spacing: 3px;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 40px;
+        }
+
+        .input-box {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: 15px;
+            border-left: 4px solid var(--accent-red);
+            margin-bottom: 15px;
+        }
+
+        .currency-switch {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .currency-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--accent-red);
+            background: transparent;
+            color: var(--accent-red);
+            cursor: pointer;
+            border-radius: 10px;
+            font-family: 'Orbitron';
+            transition: 0.3s;
+        }
+
+        .currency-btn.active {
+            background: var(--accent-red);
+            color: #fff;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            outline: none;
+        }
+
+        .display-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .main-stat {
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .main-stat span { font-size: 48px; color: var(--accent-green); font-weight: bold; }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .action-btn {
+            background: linear-gradient(90deg, #ff3131, #990000);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            margin-top: 20px;
+            font-family: 'Orbitron';
+        }
+
+        .table-container {
+            margin-top: 40px;
+            max-height: 350px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.5);
+            border-radius: 15px;
+            display: none;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #111; color: var(--accent-red); padding: 12px; text-align: left; position: sticky; top: 0; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 14px; }
+
+        @media (max-width: 768px) {
+            .grid-layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="header">
+        <h1><span class="auto">AUTO</span><span class="mall">MALL</span></h1>
+        <p>МУЛЬТИБРЕНДДИК УНАА САЛОНУ</p>
+    </div>
+    
+    <div class="grid-layout">
+        <div class="controls">
+            <div class="currency-switch">
+                <button class="currency-btn active" onclick="setCurrency('сом', this)">СОМ</button>
+                <button class="currency-btn" onclick="setCurrency('$', this)">USD ($)</button>
+            </div>
+            <div class="input-box">
+                <label>Стоимость авто</label>
+                <input type="number" id="price" value="2500000" oninput="calculate()">
+            </div>
+            <div class="input-box">
+                <label>Первый взнос</label>
+                <input type="number" id="down" value="700000" oninput="calculate()">
+            </div>
+            <div class="input-box">
+                <label>Процентная ставка (%)</label>
+                <input type="number" id="rate" value="18" oninput="calculate()">
+            </div>
+            <div class="input-box">
+                <label>Срок (месяцев)</label>
+                <input type="number" id="months" value="36" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="display-panel">
+            <div class="main-stat">
+                <label>Ежемесячный платеж</label>
+                <span id="res-monthly">0</span>
+            </div>
+            
+            <div class="stat-grid">
+                <div class="stat-card"><small>Кредит</small><b id="res-loan">0</b></div>
+                <div class="stat-card"><small>Переплата</small><b id="res-overpay" style="color: #ff4d4d;">0</b></div>
+                <div class="stat-card"><small>Ставка</small><b id="res-eff">0%</b></div>
+                <div class="stat-card"><small>Итоговая цена</small><b id="res-total">0</b></div>
+            </div>
+            <button class="action-btn" onclick="generateTable()">Показать график</button>
+        </div>
+    </div>
+
+    <div class="table-container" id="table-box">
+        <table>
+            <thead>
+                <tr><th>№</th><th>Платеж</th><th>Долг</th><th>%</th><th>Остаток</th></tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+let currentCurrency = 'сом';
+
+function setCurrency(cur, btn) {
+    currentCurrency = cur;
+    document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    calculate();
+}
+
+function format(num) {
+    return new Intl.NumberFormat('ru-RU').format(Math.round(num)) + ' ' + currentCurrency;
+}
+
+function calculate() {
+    const price = parseFloat(document.getElementById('price').value) || 0;
+    const down = parseFloat(document.getElementById('down').value) || 0;
+    const annualRate = parseFloat(document.getElementById('rate').value) || 0;
+    const months = parseInt(document.getElementById('months').value) || 1;
+
+    const principal = price - down;
+    const monthlyRate = annualRate / 12 / 100;
+
+    let loanPayment = 0;
+    if (monthlyRate > 0) {
+        const x = Math.pow(1 + monthlyRate, months);
+        loanPayment = principal * (monthlyRate * x) / (x - 1);
+    } else {
+        loanPayment = principal / months;
+    }
+
+    document.getElementById('res-monthly').innerText = format(loanPayment);
+    document.getElementById('res-loan').innerText = format(principal);
+    document.getElementById('res-overpay').innerText = format((loanPayment * months) - principal);
+    document.getElementById('res-eff').innerText = annualRate + '%';
+    document.getElementById('res-total').innerText = format(loanPayment * months + down);
+}
+
+function generateTable() {
+    const price = parseFloat(document.getElementById('price').value) || 0;
+    const down = parseFloat(document.getElementById('down').value) || 0;
+    const annualRate = parseFloat(document.getElementById('rate').value) || 0;
+    const months = parseInt(document.getElementById('months').value) || 1;
+
+    let balance = price - down;
+    const monthlyRate = annualRate / 12 / 100;
+    const x = Math.pow(1 + monthlyRate, months);
+    const loanPayment = balance * (monthlyRate * x) / (x - 1);
+
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = '';
+    document.getElementById('table-box').style.display = 'block';
+
+    for (let i = 1; i <= months; i++) {
+        const interest = balance * monthlyRate;
+        const body = loanPayment - interest;
+        balance -= body;
+        tbody.insertAdjacentHTML('beforeend', `<tr><td>${i}</td><td>${format(loanPayment)}</td><td>${format(body)}</td><td>${format(interest)}</td><td>${format(Math.max(0, balance))}</td></tr>`);
+    }
+}
+calculate();
+</script>
+</body>
+</html>
